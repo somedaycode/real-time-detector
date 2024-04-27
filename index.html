@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Activity Monitoring</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+</head>
+<body>
+<video id="video" width="640" height="480" autoplay></video>
+<script>
+    async function loadModel() {
+        const net = await posenet.load();
+        detectActivity(net);
+    }
+
+    async function detectActivity(net) {
+        const video = document.getElementById('video');
+        const pose = await net.estimateSinglePose(video, {
+            flipHorizontal: false
+        });
+        // Estimate user's pose and classify activity (e.g., sitting, standing)
+        // You need to implement the logic for classifying user's activity based on the pose estimation
+        classifyActivity(pose);
+        requestAnimationFrame(() => {
+            detectActivity(net);
+        });
+    }
+
+    function classifyActivity(pose) {
+        // Implement logic to classify user's activity based on the pose estimation
+        // For example, you can check the position of key points like nose, hips, knees, etc.
+        // to determine if the user is sitting, standing, or performing any other activity
+        // Here's a simple example to classify between sitting and standing based on the position of hips
+        const hips = pose.keypoints.find(keypoint => keypoint.part === 'hip');
+        if (hips.position.y > 200)
+            console.log('Sitting');
+        } else {
+            console.log('Standing');
+        }
+    }
+
+    navigator.mediaDevices.getUserMedia({ video: true }
+        .then(function (stream) {
+            const video = document.getElementById('video');
+            video.srcObject = stream;
+            video.play();
+            loadModel();
+        })
+        .catch(function (err) {
+            console.error('Error accessing the webcam: ' + err);
+        });
+</script>
+</body>
+</html>
